@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Sanjeevani AI{% endblock %}
+{% block content %}
+<section class="dashboard">
+  <h2>Welcome, {{ user_name }}</h2>
+  {% if summary.is_returning %}
+    <p>Last condition: <strong>{{ summary.last_condition }}</strong>
+      {% if summary.last_doctor %} - seen by Dr. {{ summary.last_doctor }}{% endif %}
+    </p>
+  {% else %}
+    <p>You have no visit history yet. Use the chat assistant to describe your symptoms.</p>
+  {% endif %}
+
+  <h3>Recovery tracker</h3>
+  {% if summary.trackers %}
+    {% for t in summary.trackers %}
+      <div class="tracker-card {% if t.overdue %}overdue{% endif %}">
+        <span><strong>{{ t.condition }}</strong>{% if t.doctor %} - Dr. {{ t.doctor }}{% endif %}</span>
+        <span>{{ t.label }}</span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No ongoing conditions being tracked.</p>
+  {% endif %}
+
+
+  <h3>Upcoming / recent appointments</h3>
+  {% if summary.upcoming %}
+    <ul class="appt-list">
+    {% for a in summary.upcoming %}
+      <li>{{ a.date }} {{ a.time }} - Dr. {{ a.doctor }} ({{ a.specialty }}) - {{ a.status }}</li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p>No appointments yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

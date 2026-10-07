@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Patient Records - Sanjeevani AI{% endblock %}
+{% block content %}
+<section class="dashboard">
+  <h2>Patient records</h2>
+
+  <form method="post" action="/records/add" class="record-form">
+    <input type="text" name="patient_name" placeholder="Patient name" required>
+    <select name="doctor_specialty" required>
+      <option value="" disabled selected>Doctor specialty</option>
+      {% for s in specialties %}
+        <option value="{{ s }}">{{ s|title }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="disease" placeholder="Disease / complaint" required>
+    <input type="text" name="doctor_name" placeholder="Doctor name (optional)">
+    <button type="submit" class="btn">Add record</button>
+  </form>
+
+  <input id="record-search" type="text" placeholder="Search by specialty or disease..." value="{{ query }}"
+         style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid #dfe2ee; font-size:14px; margin:18px 0 12px;">
+
+  <table class="record-table" id="record-table">
+    <thead>
+      <tr><th>Patient</th><th>Specialty</th><th>Disease</th><th>Doctor</th><th>Date</th></tr>
+    </thead>
+    <tbody id="record-tbody">
+      {% for r in records %}
+        <tr>
+          <td>{{ r.patient_name }}</td>
+          <td>{{ r.doctor_specialty|title }}</td>
+          <td>{{ r.disease }}</td>
+          <td>{{ r.doctor_name or "-" }}</td>
+          <td>{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No records yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<script>
+const input = document.getElementById("record-search");
+const tbody = document.getElementById("record-tbody");
+let timer;
+
+input.addEventListener("input", () => {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    const q = input.value.trim();
+    const res = await fetch(`/records/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    if (!data.results.length) {
+      tbody.innerHTML = "<tr><td colspan='5'>No records found.</td></tr>";
+      return;
+    }
+    tbody.innerHTML = data.results.map(r => `
+      <tr>
+        <td>${r.patient_name}</td>
+        <td>${r.doctor_specialty}</td>
+        <td>${r.disease}</td>
+        <td>${r.doctor_name || "-"}</td>
+        <td>${r.created_at}</td>
+      </tr>
+    `).join("");
+  }, 250);
+});
+</script>
+{% endblock %}

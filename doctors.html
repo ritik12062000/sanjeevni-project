@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Find a Doctor - Sanjeevani AI{% endblock %}
+{% block content %}
+<section class="dashboard">
+  <h2>Find a doctor</h2>
+  <p>Search by disease/symptom (e.g. "stomach ulcer", "migraine") or specialty (e.g. "cardiologist").</p>
+
+  <input id="doctor-search" type="text" placeholder="Search..." value="{{ query }}"
+         style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid #dfe2ee; font-size:14px; margin-bottom:18px;">
+
+  <div id="doctor-results" class="doctor-results">
+    {% include "components/doctor_results.html" %}
+  </div>
+</section>
+
+<script>
+const input = document.getElementById("doctor-search");
+const resultsBox = document.getElementById("doctor-results");
+let timer;
+
+input.addEventListener("input", () => {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    const q = input.value.trim();
+    const res = await fetch(`/doctors/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    renderResults(data.results);
+  }, 250);
+});
+
+function renderResults(results) {
+  if (!results.length) {
+    resultsBox.innerHTML = "<p>No doctors found for that search.</p>";
+    return;
+  }
+  resultsBox.innerHTML = results.map(doc => `
+    <div class="doctor-result-card">
+      <div>
+        <b>${doc.name}</b> - ${doc.specialization}
+        <div class="muted">${doc.qualification || ""} ${doc.experience_years ? "- " + doc.experience_years + " yrs exp" : ""} - ⭐ ${doc.rating}</div>
+        ${doc.treats_examples && doc.treats_examples.length ? `<div class="muted">Treats: ${doc.treats_examples.join(", ")}</div>` : ""}
+      </div>
+      <div class="doctor-result-action">
+        ${doc.next_slot
+          ? `<span class="muted">${doc.next_slot.date} ${doc.next_slot.time}</span>
+             <button class="btn-small book-btn" data-slot="${doc.next_slot.slot_id}">Book</button>`
+          : `<span class="muted">No slots</span>`}
+      </div>
+    </div>
+  `).join("");
+
+  resultsBox.querySelectorAll(".book-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true; btn.textContent = "Booking...";
+      const res = await fetch("/appointments/book", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({slot_id: parseInt(btn.dataset.slot)}),
+      });
+      const data = await res.json();
+      btn.textContent = data.success ? "Booked ✓" : "Try again";
+      if (!data.success) btn.disabled = false;
+    });
+  });
+}
+</script>
+{% endblock %}
