@@ -1,0 +1,6 @@
+.auth-card { max-width: 380px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+.auth-card h2 { margin-top: 0; }
+.auth-card label { display: block; margin-bottom: 14px; font-size: 14px; color: #444; }
+.auth-card input { width: 100%; padding: 9px 10px; margin-top: 4px; border: 1px solid #dfe2ee; border-radius: 8px; font-size: 14px; }
+.auth-card .error { color: #d64545; font-size: 13px; }
+.auth-card button { width: 100%; margin-top: 6px; }
