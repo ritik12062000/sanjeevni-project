@@ -1,0 +1,15 @@
+pandas
+numpy
+scikit-learn
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sqlalchemy
+python-dotenv
+itsdangerous
+argon2-cffi
+email-validator
+google-genai
+groq
+pytest
